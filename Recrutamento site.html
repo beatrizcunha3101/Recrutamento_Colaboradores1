@@ -62,10 +62,13 @@
             font-size: 2.5rem;
             opacity: 0.7;
             filter: drop-shadow(0 4px 6px rgba(90,42,61,0.15));
+            z-index: -1;
         }
         .st-1 { top: 10px; left: 10%; transform: rotate(-15deg); }
         .st-2 { bottom: 0px; right: 15%; transform: rotate(20deg); }
         .st-3 { top: 50%; right: 5%; font-size: 3.5rem; opacity: 0.3; }
+        .st-4 { top: 60%; left: 15%; font-size: 2rem; transform: rotate(15deg); opacity: 0.6; }
+        .st-5 { top: -10px; right: 25%; font-size: 2.2rem; transform: rotate(-20deg); opacity: 0.5; }
 
         /* TABS */
         .tabs {
@@ -257,6 +260,93 @@
             background: var(--bg-color); padding: 1.5rem; border-radius: 12px;
             border: 1px solid var(--accent-color);
         }
+
+        /* ESTILO POLAROID PARA A NOVA ABA ANEM */
+        .anem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .polaroid {
+            background: #fff;
+            padding: 1.5rem;
+            padding-top: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            position: relative;
+            transform: rotate(-1deg);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--accent-color);
+        }
+
+        .polaroid:nth-child(even) { transform: rotate(1.5deg); }
+        .polaroid:hover { transform: rotate(0deg) scale(1.02); z-index: 10; box-shadow: 0 15px 35px rgba(90,42,61,0.15);}
+
+        .pin {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+            border-radius: 50%;
+            box-shadow: 2px 4px 6px rgba(0,0,0,0.2), inset -2px -2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
+        .pin::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 6px; height: 6px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .polaroid h3 {
+            font-family: var(--font-title);
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.4rem;
+            margin-bottom: 0.2rem;
+            border-bottom: 1px dashed var(--accent-color);
+            padding-bottom: 0.8rem;
+        }
+
+        .polaroid p.course {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .anem-list {
+            list-style: none;
+            counter-reset: anem-counter;
+        }
+
+        .anem-list li {
+            counter-increment: anem-counter;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .anem-list li::before {
+            content: counter(anem-counter) ".";
+            font-weight: bold;
+            color: var(--primary-color);
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -266,15 +356,20 @@
             <span class="sticker st-1">🩺</span>
             <span class="sticker st-2">🧠</span>
             <span class="sticker st-3">⚕️</span>
+            <!-- Novos stickers adicionados -->
+            <span class="sticker st-4">🧬</span>
+            <span class="sticker st-5">🔬</span>
+            
             <h1>Recrutamento Núcleo</h1>
             <p class="subtitle">Análise Visual de Candidaturas e Preferências</p>
         </header>
 
-        <!-- Navegação -->
+        <!-- Navegação (Adicionado botão da ANEM) -->
         <div class="tabs">
             <button class="tab-btn active" onclick="openTab('tab-dashboard')">📊 Visão Geral</button>
             <button class="tab-btn" onclick="openTab('tab-add')">➕ Adicionar Candidatos / Pesquisa</button>
             <button class="tab-btn" onclick="openTab('tab-sector')">🎯 Análise por Setor (Estilo Print)</button>
+            <button class="tab-btn" onclick="openTab('tab-anem')" style="background: var(--bg-color); border-color: var(--primary-color);">🌐 Grupos de Trabalho ANEM</button>
             <button class="tab-btn" onclick="openTab('tab-alloc')">📋 Tabela Geral e Alocação</button>
         </div>
 
@@ -296,6 +391,11 @@
                 <div class="kpi-card">
                     <div class="kpi-value" id="kpi-allocated">0</div>
                     <div class="kpi-label">Já Alocados</div>
+                </div>
+                <!-- Novo KPI ANEM -->
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-anem">10</div>
+                    <div class="kpi-label">Interessados ANEM</div>
                 </div>
             </div>
 
@@ -387,7 +487,18 @@
             </div>
         </div>
 
-        <!-- TAB 4: ALOCAÇÃO DEFINITIVA -->
+        <!-- TAB 4: NOVA ABA ANEM -->
+        <div id="tab-anem" class="tab-content">
+            <div class="card">
+                <h2>🌐 Grupos de Trabalho ANEM</h2>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">Ordem de preferência submetida pelos alunos de Medicina para integrar a ANEM.</p>
+                <div class="anem-grid" id="anemContainer">
+                    <!-- Gerado por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ALOCAÇÃO DEFINITIVA -->
         <div id="tab-alloc" class="tab-content">
             <div class="card">
                 <h2>Gestão e Alocação</h2>
@@ -420,7 +531,7 @@
         };
         const revSectorKeys = Object.fromEntries(Object.entries(sectorKeys).map(([k, v]) => [v, k]));
 
-        // === DADOS RETIRADOS RIGOROSAMENTE DAS IMAGENS ENVIADAS ===
+        // === DADOS DO NÚCLEO INTACTOS (OS TEUS 44 CANDIDATOS) ===
         let candidates = [
             // Comunicação e Imagem (Apenas este)
             { id: 1, name: "Maria Leonor Silva", course: "3º ano MED", prefs: { "comunicacao": 1 }, allocated: null },
@@ -479,9 +590,26 @@
             { id: 44, name: "Miguel Marques", course: "3º ano CBM", prefs: { "desporto": 1 }, allocated: null }
         ];
 
+        // === NOVOS DADOS: GRUPOS DE TRABALHO ANEM ===
+        const anemCandidates = [
+            { name: "Gonçalo Pires", course: "2º ano MED", prefs: ["Mobilidade"] },
+            { name: "Beatriz Pereira", course: "3º ano MED", prefs: ["Saúde Sexual e Reprodutiva", "Mobilidade", "Educação Médica", "Direitos Humanos e Ética Médica", "Imagem e Comunicação", "Formação", "Saúde Pública"] },
+            { name: "Maria Leonor Oliveira da Silva", course: "3º ano MED", prefs: ["Formação", "Educação Médica", "Imagem e Comunicação", "Direitos Humanos e Ética Médica", "Saúde Pública", "Saúde Sexual e Reprodutiva", "Mobilidade"] },
+            { name: "Joana dos Santos Sousa", course: "3º ano MED", prefs: ["Educação Médica", "Formação", "Mobilidade", "Saúde Sexual e Reprodutiva", "Saúde Pública", "Direitos Humanos e Ética Médica", "Imagem e Comunicação"] },
+            { name: "Ana Sofia da Cunha Martins", course: "2º ano MED", prefs: ["Saúde Sexual e Reprodutiva", "Educação Médica", "Imagem e comunicação", "Formação", "Mobilidade", "Saúde Pública", "Direitos Humanos e Ética Médica"] },
+            { name: "Tiago da Silva Leite", course: "2º ano MED", prefs: ["Saúde Sexual e Reprodutiva", "Direitos Humanos e Ética Médica", "Educação Médica", "Formação", "Imagem e Comunicação", "Saúde Pública", "Mobilidade"] },
+            { name: "Carolina Nascimento Alves", course: "3º ano MED", prefs: ["Direitos Humanos e Ética Médica", "Educação Médica", "Saúde Sexual e Reprodutiva", "Saúde Pública", "Formação", "Mobilidade", "Imagem e Comunicação"] },
+            { name: "Rodrigo de Nóbrega Esteves", course: "2º ano MED", prefs: ["Saúde Sexual e Reprodutiva", "Mobilidade", "Saúde Pública", "Direitos Humanos e Ética Médica", "Formação", "Imagem e Comunicação", "Educação Médica"] },
+            { name: "Maria Lopes Palma", course: "2º ano MED", prefs: ["Direitos Humanos e Ética Médica", "Educação Médica", "Saúde Sexual e Reprodutiva", "Imagem e Comunicação", "Formação", "Mobilidade", "Saúde Pública"] },
+            { name: "Carlota Martins", course: "3º ano MED", prefs: ["Formação", "Saúde Pública", "Mobilidade", "Educação Médica", "Saúde Sexual e Reprodutiva", "Direitos Humanos e Ética Médica", "Imagem e Comunicação"] }
+        ];
+
         let myChart = null;
 
-        function init() { updateDashboard(); }
+        function init() { 
+            updateDashboard(); 
+            renderAnem(); // Adicionado aqui para renderizar os cartões da ANEM
+        }
 
         function openTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -501,6 +629,8 @@
             document.getElementById('kpi-single').innerText = candidates.filter(c => Object.keys(c.prefs).length === 1).length;
             document.getElementById('kpi-multi').innerText = candidates.filter(c => Object.keys(c.prefs).length > 1).length;
             document.getElementById('kpi-allocated').innerText = candidates.filter(c => c.allocated !== null).length;
+            // KPI da ANEM fixo com o tamanho do array
+            document.getElementById('kpi-anem').innerText = anemCandidates.length; 
         }
 
         document.getElementById('addForm').addEventListener('submit', function(e) {
@@ -569,7 +699,6 @@
 
         function renderSectorAnalysis() {
             const sectorName = document.getElementById('sectorSelect').value;
-            // Handle naming slight differences (Bem Estar vs Bem-Estar)
             const matchedKey = Object.keys(sectorKeys).find(k => sectorKeys[k].includes(sectorName.split(' ')[0]));
             const sectorKey = matchedKey || "cultural";
 
@@ -625,6 +754,27 @@
             drawPills(colPrefere, 'col-prefere', 'outros');
             drawPills(colSemPref, 'col-semperef', 'outros');
             drawPills(colPrefOutro, 'col-prefereoutro', 'prefere_outro');
+        }
+
+        // Função adicionada para injetar as polaroids da ANEM
+        function renderAnem() {
+            const container = document.getElementById('anemContainer');
+            container.innerHTML = "";
+
+            anemCandidates.forEach(cand => {
+                let listHtml = cand.prefs.map(p => `<li>${p}</li>`).join('');
+                let polaroidHtml = `
+                    <div class="polaroid">
+                        <div class="pin"></div>
+                        <h3>${cand.name}</h3>
+                        <p class="course">${cand.course}</p>
+                        <ul class="anem-list">
+                            ${listHtml}
+                        </ul>
+                    </div>
+                `;
+                container.innerHTML += polaroidHtml;
+            });
         }
 
         function renderChart() {
