@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Recrutamento Núcleo</title>
+    <!-- Fontes idênticas ao estilo da imagem -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Paleta extraída da imagem */
+            --bg-color: #FCF8F2; /* Creme */
+            --primary-color: #5A2A3D; /* Bordeaux/Ameixa Escuro */
+            --accent-color: #E8D3D0; /* Rosa Blush/Velho */
+            --accent-dark: #8C5C68;
+            --text-dark: #332126;
+            --text-muted: #6C5A60;
+            --card-bg: #FFFFFF;
+            
+            --radius: 24px;
+            --shadow: 0 12px 30px rgba(90, 42, 61, 0.08);
+            --font-title: 'DM Serif Display', serif;
+            --font-body: 'Outfit', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-family: var(--font-body);
+            padding: 2rem;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(232, 211, 208, 0.4) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(232, 211, 208, 0.5) 0%, transparent 25%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* HEADER E STICKERS */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        h1 {
+            font-family: var(--font-title);
+            color: var(--primary-color);
+            font-size: 3.5rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle { font-size: 1.1rem; color: var(--text-muted); }
+
+        .sticker {
+            position: absolute;
+            font-size: 2.5rem;
+            opacity: 0.7;
+            filter: drop-shadow(0 4px 6px rgba(90,42,61,0.15));
+        }
+        .st-1 { top: 10px; left: 10%; transform: rotate(-15deg); }
+        .st-2 { bottom: 0px; right: 15%; transform: rotate(20deg); }
+        .st-3 { top: 50%; right: 5%; font-size: 3.5rem; opacity: 0.3; }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-color);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-family: var(--font-body);
+            font-weight: 600;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(90, 42, 61, 0.2);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS GERAIS */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+        }
+
+        h2 {
+            font-family: var(--font-title);
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--accent-color);
+        }
+
+        .kpi-value {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+        .kpi-label { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* FORMULÁRIOS & INPUTS */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+        
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-color); }
+        
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            background: var(--bg-color);
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); background: #fff; }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .btn:hover { background: var(--text-dark); }
+        .btn-small { padding: 0.5rem 1rem; width: auto; font-size: 0.85rem; margin-top:0; border-radius: 8px;}
+        .btn-danger { background: #e74c3c; }
+
+        /* VIEW SETOR (O ESQUEMA DA TUA IMAGEM) */
+        .sector-analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 1100px) { .sector-analysis-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .sector-analysis-grid { grid-template-columns: 1fr; } }
+
+        .sector-col {
+            background: rgba(255,255,255,0.6);
+            border: 2px dashed var(--accent-color);
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .sector-col h3 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            min-height: 45px;
+        }
+
+        .cand-pill {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 30px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cand-pill .avatar {
+            width: 40px; height: 40px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-title);
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .cand-pill-info { display: flex; flex-direction: column; }
+        .cand-pill-name { font-weight: 600; color: var(--text-dark); }
+        .cand-pill-course { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* TABELA DE ALOCAÇÃO */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--accent-color); }
+        th { font-weight: 600; color: var(--primary-color); font-family: var(--font-title); font-size: 1.2rem;}
+        
+        .badge {
+            display: inline-block; padding: 0.3rem 0.8rem;
+            border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            background: var(--accent-color); color: var(--primary-color);
+            margin: 2px;
+        }
+        .badge-allocated { background: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
+        
+        .pref-input-group {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+            background: var(--bg-color); padding: 1.5rem; border-radius: 12px;
+            border: 1px solid var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <span class="sticker st-1">🩺</span>
+            <span class="sticker st-2">🧠</span>
+            <span class="sticker st-3">⚕️</span>
+            <h1>Recrutamento Núcleo</h1>
+            <p class="subtitle">Análise Visual de Candidaturas e Preferências</p>
+        </header>
+
+        <!-- Navegação -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('tab-dashboard')">📊 Visão Geral</button>
+            <button class="tab-btn" onclick="openTab('tab-add')">➕ Adicionar Candidatos / Pesquisa</button>
+            <button class="tab-btn" onclick="openTab('tab-sector')">🎯 Análise por Setor (Estilo Print)</button>
+            <button class="tab-btn" onclick="openTab('tab-alloc')">📋 Tabela Geral e Alocação</button>
+        </div>
+
+        <!-- TAB 1: VISÃO GERAL -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-total">0</div>
+                    <div class="kpi-label">Total Candidatos</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-single">0</div>
+                    <div class="kpi-label">Apenas 1 Escolha</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-multi">0</div>
+                    <div class="kpi-label">Múltiplas Escolhas</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-allocated">0</div>
+                    <div class="kpi-label">Já Alocados</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📈 Distribuição Total de Escolhas por Setor</h2>
+                <div style="height: 350px;">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: ADICIONAR E PESQUISAR -->
+        <div id="tab-add" class="tab-content">
+            <div class="card">
+                <h2>Adicionar Novo Candidato</h2>
+                <form id="addForm">
+                    <div class="form-grid" style="margin-bottom: 1.5rem;">
+                        <div>
+                            <label>Nome do Candidato</label>
+                            <input type="text" id="addName" placeholder="Ex: João Miguel Silva" required>
+                        </div>
+                        <div>
+                            <label>Ano e Curso (Opcional)</label>
+                            <input type="text" id="addCourse" placeholder="Ex: 1º ano MED">
+                        </div>
+                    </div>
+                    
+                    <label>Ordem de Preferência (1 a 4). Deixa em branco se não se candidatar ao setor.</label>
+                    <div class="pref-input-group">
+                        <div>
+                            <label style="font-size: 0.85rem;">Cultural e Social</label>
+                            <input type="number" id="pref_cultural" min="1" max="4" placeholder="Nº">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem;">Comunicação e Imagem</label>
+                            <input type="number" id="pref_comunicacao" min="1" max="4" placeholder="Nº">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem;">Pedagógico</label>
+                            <input type="number" id="pref_pedagogico" min="1" max="4" placeholder="Nº">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem;">Desporto e Bem Estar</label>
+                            <input type="number" id="pref_desporto" min="1" max="4" placeholder="Nº">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Registar Candidato</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>🔍 Pesquisar Escolhas de Candidato</h2>
+                <input type="text" id="searchCand" placeholder="Escreve o nome da pessoa para ver as suas opções..." oninput="searchCandidate()">
+                <div id="searchResult" style="margin-top: 1.5rem;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ANÁLISE POR SETOR -->
+        <div id="tab-sector" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <h2>Análise Visual do Setor</h2>
+                    <select id="sectorSelect" style="width: 300px;" onchange="renderSectorAnalysis()">
+                        <option value="Comunicação e Imagem">Comunicação e Imagem</option>
+                        <option value="Cultural e Social">Cultural e Social</option>
+                        <option value="Pedagógico">Pedagógico</option>
+                        <option value="Desporto e Bem Estar">Desporto e Bem-Estar</option>
+                    </select>
+                </div>
+
+                <div class="sector-analysis-grid">
+                    <div class="sector-col" id="col-apenas">
+                        <h3>Candidatou-se apenas a este setor</h3>
+                        <div class="list"></div>
+                    </div>
+                    <div class="sector-col" id="col-prefere">
+                        <h3>Candidatou-se a outros, mas prefere este</h3>
+                        <div class="list"></div>
+                    </div>
+                    <div class="sector-col" id="col-semperef">
+                        <h3>Candidatou-se a outros sem referir preferência</h3>
+                        <div class="list"></div>
+                    </div>
+                    <div class="sector-col" id="col-prefereoutro">
+                        <h3>Candidatou-se, mas prefere outro setor</h3>
+                        <div class="list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: ALOCAÇÃO DEFINITIVA -->
+        <div id="tab-alloc" class="tab-content">
+            <div class="card">
+                <h2>Gestão e Alocação</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Candidato</th>
+                                <th>Preferências Indicadas</th>
+                                <th>Estado / Departamento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allocTableBody">
+                            <!-- Inserido por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mapeamento interno
+        const sectorKeys = {
+            "cultural": "Cultural e Social",
+            "comunicacao": "Comunicação e Imagem",
+            "pedagogico": "Pedagógico",
+            "desporto": "Desporto e Bem Estar"
+        };
+        const revSectorKeys = Object.fromEntries(Object.entries(sectorKeys).map(([k, v]) => [v, k]));
+
+        // === DADOS RETIRADOS RIGOROSAMENTE DAS IMAGENS ENVIADAS ===
+        let candidates = [
+            // Comunicação e Imagem (Apenas este)
+            { id: 1, name: "Maria Leonor Silva", course: "3º ano MED", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 2, name: "Rodrigo Esteves", course: "2º ano MED", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 3, name: "Francisca Santos", course: "3º ano CBM", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 4, name: "Leonor Vaz", course: "3º ano CBM", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 5, name: "Joana Sousa", course: "3º ano MED", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 6, name: "Tomás Cruz", course: "2º ano CBM", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 7, name: "Sofia Esteves", course: "2º ano CBM", prefs: { "comunicacao": 1 }, allocated: null },
+            { id: 8, name: "Maria Teresa Faustino", course: "2º ano CBM", prefs: { "comunicacao": 1 }, allocated: null },
+            
+            // C&I e Cultural e Social (Cruzamentos de preferência e sem preferência)
+            { id: 9, name: "Andreia Oliveira", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 2, "pedagogico": 2 }, allocated: null },
+            { id: 10, name: "Beatriz Pereira", course: "3º ano MED", prefs: { "comunicacao": 1, "cultural": 2 }, allocated: null },
+            { id: 11, name: "Margarida Montenegro", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 1 }, allocated: null },
+            { id: 12, name: "João Ferreira", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 1 }, allocated: null },
+            { id: 13, name: "Sara Santos", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 1 }, allocated: null },
+            { id: 14, name: "Marcelo Miranda", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 1 }, allocated: null },
+            { id: 15, name: "Marta Lemos", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 1 }, allocated: null },
+            { id: 16, name: "Thais Sipauba", course: "2º ano CBM", prefs: { "comunicacao": 1, "cultural": 1, "pedagogico": 1, "desporto": 1 }, allocated: null },
+            { id: 17, name: "Inês Codinha", course: "3º ano CBM", prefs: { "cultural": 1, "comunicacao": 2 }, allocated: null },
+            { id: 18, name: "Maria Palma", course: "2º ano MED", prefs: { "cultural": 1, "comunicacao": 2 }, allocated: null },
+
+            // Cultural e Social (Apenas este)
+            { id: 19, name: "Beatriz Silva", course: "2º ano CBM", prefs: { "cultural": 1 }, allocated: null },
+            { id: 20, name: "Sofia Peng", course: "2º ano CBM", prefs: { "cultural": 1 }, allocated: null },
+            { id: 21, name: "Ana Sofia Martins", course: "2º ano MED", prefs: { "cultural": 1 }, allocated: null },
+            { id: 22, name: "Camila Silva", course: "3º ano CBM", prefs: { "cultural": 1 }, allocated: null },
+            { id: 23, name: "João Tomé Pinto", course: "2º ano MED", prefs: { "cultural": 1 }, allocated: null },
+            { id: 24, name: "Raquel Oliveira", course: "2º ano CBM", prefs: { "cultural": 1 }, allocated: null },
+            { id: 25, name: "Rita Miguel Tavares", course: "2º ano CBM", prefs: { "cultural": 1 }, allocated: null },
+            { id: 26, name: "Carlota Martins", course: "3º ano MED", prefs: { "cultural": 1 }, allocated: null },
+            { id: 27, name: "Beatriz Cunha", course: "3º ano CBM", prefs: { "cultural": 1 }, allocated: null },
+            
+            // Cultural (outras misturas)
+            { id: 28, name: "Gonçalo Ferreira", course: "3º ano CBM", prefs: { "cultural": 1, "pedagogico": 2 }, allocated: null },
+            { id: 29, name: "Carolina Alves", course: "3º ano MED", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 30, name: "Joana Figueiredo", course: "2º ano CBM", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 31, name: "Bela Pereira", course: "2º ano CBM", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 32, name: "Mariana Leite", course: "3º ano CBM", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 33, name: "Tiago Leite", course: "2º ano MED", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 34, name: "Matilde Rijo", course: "2º ano CBM", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 35, name: "Mafalda Alves", course: "2º ano CBM", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 36, name: "Bruno Costa", course: "2º ano CBM", prefs: { "cultural": 1, "pedagogico": 1 }, allocated: null },
+            { id: 37, name: "David Diniz", course: "2º ano CBM", prefs: { "cultural": 1, "desporto": 1 }, allocated: null },
+            
+            // Pedagógico
+            { id: 38, name: "Gonçalo Pires", course: "2º ano MED", prefs: { "pedagogico": 1 }, allocated: null },
+            { id: 39, name: "Juliana Ferreira", course: "2º ano CBM", prefs: { "pedagogico": 1, "desporto": 1 }, allocated: null },
+
+            // Desporto e Bem-Estar
+            { id: 40, name: "Francisca Afonso", course: "2º ano MED", prefs: { "desporto": 1 }, allocated: null },
+            { id: 41, name: "Afonso Pocinho", course: "3º ano CBM", prefs: { "desporto": 1 }, allocated: null },
+            { id: 42, name: "Vitória Maranhão", course: "3º ano CBM", prefs: { "desporto": 1 }, allocated: null },
+            { id: 43, name: "Martim Gamelas", course: "3º ano CBM", prefs: { "desporto": 1 }, allocated: null },
+            { id: 44, name: "Miguel Marques", course: "3º ano CBM", prefs: { "desporto": 1 }, allocated: null }
+        ];
+
+        let myChart = null;
+
+        function init() { updateDashboard(); }
+
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'tab-dashboard') updateDashboard();
+            if(tabId === 'tab-sector') renderSectorAnalysis();
+        }
+
+        function updateDashboard() {
+            renderKPIs(); renderTable(); renderChart(); renderSectorAnalysis(); searchCandidate();
+        }
+
+        function renderKPIs() {
+            document.getElementById('kpi-total').innerText = candidates.length;
+            document.getElementById('kpi-single').innerText = candidates.filter(c => Object.keys(c.prefs).length === 1).length;
+            document.getElementById('kpi-multi').innerText = candidates.filter(c => Object.keys(c.prefs).length > 1).length;
+            document.getElementById('kpi-allocated').innerText = candidates.filter(c => c.allocated !== null).length;
+        }
+
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let name = document.getElementById('addName').value;
+            let course = document.getElementById('addCourse').value;
+            let prefs = {};
+            ['cultural', 'comunicacao', 'pedagogico', 'desporto'].forEach(s => {
+                let val = document.getElementById('pref_'+s).value;
+                if(val) prefs[s] = parseInt(val);
+            });
+            if(Object.keys(prefs).length === 0) { alert("Escolhe pelo menos um setor."); return; }
+            candidates.push({ id: Date.now(), name, course, prefs, allocated: null });
+            this.reset(); updateDashboard();
+            alert("Candidato adicionado com sucesso!");
+        });
+
+        function searchCandidate() {
+            const query = document.getElementById('searchCand').value.toLowerCase();
+            const resDiv = document.getElementById('searchResult');
+            if(!query) { resDiv.innerHTML = ""; return; }
+
+            const found = candidates.filter(c => c.name.toLowerCase().includes(query));
+            if(found.length === 0) { resDiv.innerHTML = "<p>Nenhum candidato encontrado.</p>"; return; }
+
+            let html = "";
+            found.forEach(c => {
+                let pList = Object.entries(c.prefs).map(([k,v]) => `<span class="badge">${sectorKeys[k]} (Pref: ${v})</span>`).join('');
+                html += `
+                    <div style="padding: 1rem; border: 1px solid var(--accent-color); border-radius: 12px; margin-bottom: 0.5rem; background: #fff;">
+                        <strong style="color: var(--primary-color); font-size:1.1rem">${c.name}</strong> 
+                        <span style="font-size:0.8rem; color:gray">${c.course}</span><br>
+                        <div style="margin-top:0.5rem">${pList}</div>
+                    </div>`;
+            });
+            resDiv.innerHTML = html;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('allocTableBody');
+            tbody.innerHTML = "";
+            candidates.forEach(c => {
+                let pList = Object.entries(c.prefs).map(([k,v]) => `<span class="badge">${sectorKeys[k]}: ${v}</span>`).join('');
+                let status = c.allocated ? `<span class="badge badge-allocated">Alocado: ${sectorKeys[c.allocated]}</span>` : `<span class="badge" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba;">Pendente</span>`;
+                
+                let selectHtml = `<select onchange="allocate(${c.id}, this.value)" class="btn-small" style="width: auto; padding: 0.3rem;">
+                    <option value="">Alocar a...</option>
+                    ${Object.entries(sectorKeys).map(([k,v]) => `<option value="${k}">${v}</option>`).join('')}
+                </select>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${c.name}</strong><br><span style="font-size:0.8rem; color:var(--text-muted)">${c.course}</span></td>
+                        <td>${pList}</td>
+                        <td>${status}</td>
+                        <td style="display:flex; gap:10px; align-items:center;">
+                            ${!c.allocated ? selectHtml : `<button class="btn btn-small" onclick="allocate(${c.id}, null)">Desalocar</button>`}
+                            <button class="btn btn-small btn-danger" onclick="deleteCand(${c.id})">🗑️ Eliminar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function allocate(id, sector) { let cand = candidates.find(c => c.id === id); if(cand) cand.allocated = sector; updateDashboard(); }
+        function deleteCand(id) { if(confirm("Eliminar candidato?")) { candidates = candidates.filter(c => c.id !== id); updateDashboard(); } }
+
+        function renderSectorAnalysis() {
+            const sectorName = document.getElementById('sectorSelect').value;
+            // Handle naming slight differences (Bem Estar vs Bem-Estar)
+            const matchedKey = Object.keys(sectorKeys).find(k => sectorKeys[k].includes(sectorName.split(' ')[0]));
+            const sectorKey = matchedKey || "cultural";
+
+            let colApenas = [], colPrefere = [], colSemPref = [], colPrefOutro = [];
+
+            candidates.forEach(c => {
+                if(c.prefs[sectorKey] === undefined) return;
+                const userPrefs = Object.values(c.prefs);
+                const rankOfThis = c.prefs[sectorKey];
+                const totalChoices = userPrefs.length;
+                
+                if (totalChoices === 1) { colApenas.push(c); }
+                else {
+                    let minRank = Math.min(...userPrefs);
+                    let allEqual = userPrefs.every(val => val === userPrefs[0]);
+                    
+                    if (allEqual) colSemPref.push(c);
+                    else if (rankOfThis === minRank) colPrefere.push(c);
+                    else colPrefOutro.push(c);
+                }
+            });
+
+            const drawPills = (arr, containerId, extraInfoType) => {
+                const container = document.querySelector(`#${containerId} .list`);
+                container.innerHTML = "";
+                if(arr.length === 0) { container.innerHTML = "<p style='font-size:0.8rem; color:var(--text-muted);'>Nenhum candidato.</p>"; return; }
+                
+                arr.forEach(c => {
+                    let initials = c.name.split(' ').map(n => n[0]).join('').substring(0,2);
+                    let extraInfo = "";
+                    if(extraInfoType === 'outros') {
+                        let others = Object.keys(c.prefs).filter(k => k !== sectorKey).map(k => sectorKeys[k]).join(', ');
+                        extraInfo = `<div style="font-size:0.7rem; color:var(--primary-color); margin-top:4px;">Também: ${others}</div>`;
+                    } else if (extraInfoType === 'prefere_outro') {
+                        let minVal = Math.min(...Object.values(c.prefs));
+                        let bestSectorKey = Object.keys(c.prefs).find(k => c.prefs[k] === minVal);
+                        extraInfo = `<div style="font-size:0.7rem; color:#c0392b; margin-top:4px; font-weight:bold;">Prefere: ${sectorKeys[bestSectorKey]}</div>`;
+                    }
+
+                    container.innerHTML += `
+                        <div class="cand-pill">
+                            <div class="avatar">${initials}</div>
+                            <div class="cand-pill-info">
+                                <span class="cand-pill-name">${c.name}</span>
+                                <span class="cand-pill-course">${c.course}</span>
+                                ${extraInfo}
+                            </div>
+                        </div>`;
+                });
+            };
+
+            drawPills(colApenas, 'col-apenas', 'none');
+            drawPills(colPrefere, 'col-prefere', 'outros');
+            drawPills(colSemPref, 'col-semperef', 'outros');
+            drawPills(colPrefOutro, 'col-prefereoutro', 'prefere_outro');
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            let data = { cultural:0, comunicacao:0, pedagogico:0, desporto:0 };
+            candidates.forEach(c => { Object.keys(c.prefs).forEach(k => data[k]++); });
+
+            if(myChart) myChart.destroy();
+            Chart.defaults.font.family = "'Outfit', sans-serif";
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cultural e Social', 'Comunicação e Imagem', 'Pedagógico', 'Desporto e Bem-Estar'],
+                    datasets: [{
+                        label: 'Nº de Candidaturas',
+                        data: [data.cultural, data.comunicacao, data.pedagogico, data.desporto],
+                        backgroundColor: '#E8D3D0', borderColor: '#5A2A3D', borderWidth: 2, borderRadius: 12
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
